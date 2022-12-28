@@ -64,9 +64,9 @@ class LogParser:
     def clustering(self):
         sys.setrecursionlimit(100000000) #set the recursion limits number
         v=math.floor(sum(self.wordLen)/len(self.wordLen))
-        print('the parameter v is: %d' %(v))
+        print(('the parameter v is: %d' %(v)))
         logNum=len(self.wordLen)
-        print('there are %d loglines'%(logNum))
+        print(('there are %d loglines'%(logNum)))
         #In order to save time, load distArraydata, if exist, do not calculate the edit distance again:
         if os.path.exists(self.para.savePath+self.logname+'editDistance.csv') and SAVEDISTANCE:
             print('Loading distance matrix from cache..')
@@ -78,10 +78,10 @@ class LogParser:
             distMat,distList=calDistance(self.wordLL,v,path)
         distArray=np.array(distList)
         threshold1=self.GetkMeansThreshold(distArray)
-        print('the threshold1 is: %s'%(threshold1))
-        
+        print(('the threshold1 is: %s'%(threshold1)))
+
         # connect two loglines with distance < threshold, logDict is a dictionary
-        # where the key is line num while 
+        # where the key is line num while
         logDict={}
         for i in range(logNum):
             logLineSet=set()
@@ -89,8 +89,8 @@ class LogParser:
                 if distMat[i,j]<threshold1:
                     logLineSet.add(j)
             logDict[i]=logLineSet
-        
-        #use DFS to get the initial group. 
+
+        #use DFS to get the initial group.
         flag=np.zeros((logNum,1)) # used to label whether line has been visited, 0 represents not visited
         for key in logDict:
             if flag[key]==1:
@@ -110,8 +110,8 @@ class LogParser:
             for colu in row:
                 eachLineLogList.append(self.wordLL[colu])
             self.groups.append(eachLineLogList)
-        print('there are %s groups'%(len(self.wordLenPerGroup)))
-    
+        print(('there are %s groups'%(len(self.wordLenPerGroup))))
+
     #k-means where k equals 2 to divide the edit distance into two groups
     def GetkMeansThreshold(self, distArray):
         print('kMeans calculation...')
@@ -147,16 +147,16 @@ class LogParser:
     #split the current group recursively.
     def splitting(self):
         print('splitting into different groups...')
-        print ('the split_threshold is %d'%(self.para.split_threshold))
+        print(('the split_threshold is %d'%(self.para.split_threshold)))
         groupNum=len(self.groups) #how many groups initially
         for i in range(groupNum):
-            splitEachGroup(self.groups[i],self.para.split_threshold,self.loglinesOfGroups[i])    
+            splitEachGroup(self.groups[i],self.para.split_threshold,self.loglinesOfGroups[i])
 
         # to flat the list of list of list to list of many lists, that is only one layer lists nested
         mergeLists(self.groups,self.newGroups)
         mergeLists(self.loglinesOfGroups,self.flatLogLineGroups)
         print('Merge the lists together...')
-        print('there are %s different groups'%(len(self.flatLogLineGroups)))
+        print(('there are %s different groups'%(len(self.flatLogLineGroups))))
 
     #extract the templates according to the logs in each group
     def extracting(self):
@@ -166,7 +166,7 @@ class LogParser:
             if groupLen==1:
                 self.templates.append(eachGroup[0])
             else:
-                # commonPart = 
+                # commonPart =
                 # print(eachGroup)
                 # sys.exit()
                 commonPart=LCS(eachGroup[0],eachGroup[1])
@@ -178,7 +178,7 @@ class LogParser:
                             commonPart=["<*>"]
                             break
                 self.templates.append(commonPart)
-  
+
 
     # save to logs in groups into different template txt
     def writeResultToFile(self):
@@ -231,7 +231,7 @@ class LogParser:
 
 
     def generate_logformat_regex(self, logformat):
-        ''' 
+        '''
         Function to generate regular expression to split log messages
         '''
         headers = []
@@ -251,14 +251,14 @@ class LogParser:
 
     def parse(self, logname):
         starttime = datetime.now()
-        print('Parsing file: ' + os.path.join(self.para.path, logname))
+        print(('Parsing file: ' + os.path.join(self.para.path, logname)))
         self.logname = logname
         self.paraErasing()
         self.clustering()
         self.splitting()
         self.extracting()
         self.writeResultToFile()
-        print('Parsing done. [Time taken: {!s}]'.format(datetime.now() - starttime))
+        print(('Parsing done. [Time taken: {!s}]'.format(datetime.now() - starttime)))
 
 
 #merge the list of lists(many layer) into one list of list
@@ -269,15 +269,15 @@ def mergeLists(initGroup,flatLogLineGroups):
         else:
             mergeLists(initGroup[i],flatLogLineGroups)
 
-#find out whether a list contained a list 
+#find out whether a list contained a list
 def listContained(group):
     for i in range(len(group)):
         if type(group[i])==list:
             return True
     return False
 
-#for each group, According to the splittable and groupLen, decide whether to split 
-#it iteratively until it cannot be splitted any more  
+#for each group, According to the splittable and groupLen, decide whether to split
+#it iteratively until it cannot be splitted any more
 def splitEachGroup(eachGroup,split_threshold,loglinesEachGroup):
         groupLen=len(eachGroup)
         if groupLen<=1:
@@ -314,9 +314,9 @@ def deleteAllFiles(dirPath):
     fileList = os.listdir(dirPath)
     for fileName in fileList:
         os.remove(dirPath+"/"+fileName)
-    
-#find the position that should be splitted, that is to find minimum num of different 
-# variable parts of each position or find the entropy 
+
+#find the position that should be splitted, that is to find minimum num of different
+# variable parts of each position or find the entropy
 def posiToSplit(eachGroup,split_threshold):
     groupLen=len(eachGroup)
     wordLabel=[]
@@ -334,17 +334,17 @@ def posiToSplit(eachGroup,split_threshold):
 
     for k in range(groupLen):
         newWordLabel=[]
-        for t in range(len(eachGroup[k])): 
+        for t in range(len(eachGroup[k])):
             if eachGroup[k][t] in commonPart:
                 newWordLabel.append(1) #1 represent constant
-            else: 
+            else:
                 newWordLabel.append(0) #0 represents variable
         wordLabel.append(newWordLabel)
 
     conOrParaDivi=[]
     partLabel=[]
     seqLen=[]
-    #connect the continuous constant words or variable words as a big part(be a sequence) 
+    #connect the continuous constant words or variable words as a big part(be a sequence)
     for i in range(groupLen):
         start=0
         newconOrParaLL=[]
@@ -384,7 +384,7 @@ def posiToSplit(eachGroup,split_threshold):
         partOccuLD.append(wordOccuD)
 
     for j in range(groupLen):    #the j-th word sequence
-        for k in range(len(conOrParaDivi[j])):     # the k-th word in word sequence 
+        for k in range(len(conOrParaDivi[j])):     # the k-th word in word sequence
             key=conOrParaDivi[j][k]
             if key not in partOccuLD[k]:
                 partOccuLD[k][key]=1
@@ -406,16 +406,16 @@ def posiToSplit(eachGroup,split_threshold):
                 minNum=numOfDiffParts[i]
     if minNum==np.inf:
         Splittable='no'
-        #no minmum that smaller than split_threshold, which means all 
+        #no minmum that smaller than split_threshold, which means all
         # position except are parameters, no need to split
-        returnValues['splittable']='no' 
+        returnValues['splittable']='no'
         return returnValues
-    
+
     indexOfMinItem=[]
     for i in range(numOfPosi):
         if numOfDiffParts[i]==minNum:
             indexOfMinItem.append(i)
-    
+
     if len(indexOfMinItem)==1:
         minIndex=indexOfMinItem[0]   #minmum position
 
@@ -431,7 +431,7 @@ def posiToSplit(eachGroup,split_threshold):
     diffWordList=list(partOccuLD[minIndex].keys())
     returnValues['splittable']='yes'
     if len(diffWordList)==1:
-        returnValues['splittable']='no' 
+        returnValues['splittable']='no'
     returnValues['minIndex']=minIndex
     returnValues['diffWordList']=diffWordList
     returnValues['conOrParaDivi']=conOrParaDivi
@@ -482,12 +482,12 @@ def entropy(wordsOnPosit,totalNum):
 
 def dfsTraversal(key,logDict,flag,groupLoglist):
     for nodes in logDict[key]:
-        if flag[nodes]==0:  
+        if flag[nodes]==0:
             groupLoglist.append(nodes)
             flag[nodes]=1
-            dfsTraversal(nodes,logDict,flag,groupLoglist)   
+            dfsTraversal(nodes,logDict,flag,groupLoglist)
 
-#calculate the distance betweent each two logs and save into a matrix       
+#calculate the distance betweent each two logs and save into a matrix
 def calDistance(wordLL,v,path):
     print('calculate distance between every two logs...')
     logNum=len(wordLL)
@@ -507,19 +507,19 @@ def calDistance(wordLL,v,path):
 def editDistOfSeq(wordList1,wordList2,v):
     m = len(wordList1)+1
     n = len(wordList2)+1
-    d = []           
+    d = []
     t=s=0
     for i in range(m):
         d.append([t])
         t+=1/(math.exp(i-v)+1)
-    del d[0][0]    
+    del d[0][0]
     for j in range(n):
         d[0].append(s)
-        s+=1/(math.exp(j-v)+1)       
+        s+=1/(math.exp(j-v)+1)
     for i in range(1,m):
         for j in range(1,n):
             if wordList1[i-1]==wordList2[j-1]:
-                d[i].insert(j,d[i-1][j-1])           
+                d[i].insert(j,d[i-1][j-1])
             else:
                 weight=1.0/(math.exp(i-1-v)+1)
                 minimum = min(d[i-1][j]+weight, d[i][j-1]+weight, d[i-1][j-1]+2*weight)
@@ -529,4 +529,5 @@ def editDistOfSeq(wordList1,wordList2,v):
     # print(d[-1][-1])
     # raw_input()
     return  d[-1][-1]
+
 

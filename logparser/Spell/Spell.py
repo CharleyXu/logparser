@@ -209,7 +209,7 @@ class LogParser:
 
     def printTree(self, node, dep):
         pStr = ''   
-        for i in xrange(dep):
+        for i in range(dep):
             pStr += '\t'
 
         if node.token == '':
@@ -306,11 +306,13 @@ class LogParser:
         """
         headers = []
         splitters = re.split(r'(<[^<>]+>)', logformat)
+        print("splitters: ", splitters)
         regex = ''
         for k in range(len(splitters)):
             if k % 2 == 0:
-                splitter = re.sub(' +', '\s+', splitters[k])
-                regex += splitter
+                if splitters[k].strip() and ":" not in splitters[k]:
+                    splitter = re.sub(' +', '\s+', splitters[k])
+                    regex += splitter
             else:
                 header = splitters[k].strip('<').strip('>')
                 regex += '(?P<%s>.*?)' % header
